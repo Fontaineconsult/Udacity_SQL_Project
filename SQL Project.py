@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import psycopg2
 
 
@@ -15,13 +16,15 @@ def find_top_articles():
         "DESC LIMIT 3"
         )
     returned_data = cursor.fetchall()
-    start_string = '''
-    \n The top three articles are: \n \n
-        1. {x[0][0]} - {x[0][1]} views \n
-        2. {x[1][0]} - {x[1][1]} views \n
-        3. {x[2][0]} - {x[2][1]} views \n
-    '''
-    return (start_string.format(x=returned_data))
+    items_string = ""
+    n = 1
+    for a,b in returned_data:
+        output_string = "    {item}. {name} - {count} views \n \n".format(item = n, name = a, count = b)
+        items_string = items_string + output_string
+        n+=1
+
+
+    return("The top articles are:\n \n {output_list}".format(output_list=items_string))
 
 
 def find_top_authors():
@@ -31,16 +34,20 @@ def find_top_authors():
         "SELECT authors.name, count(authors.name) "
         "FROM authors INNER JOIN articles ON authors.id = articles.author "
         " INNER JOIN clean_logs ON articles.slug = clean_logs.right "
-        " GROUP BY authors.name ORDER BY count(authors.name) DESC LIMIT 3;"
+        " GROUP BY authors.name ORDER BY count(authors.name) DESC;"
         )
     returned_data = cursor.fetchall()
-    start_string = '''
-    \n The top three authors are: \n \n
-        1. {x[0][0]} - {x[0][1]} views \n
-        2. {x[1][0]} - {x[1][1]} views \n
-        3. {x[2][0]} - {x[2][1]} views \n
-    '''
-    return (start_string.format(x=returned_data))
+    items_string = ""
+    n = 1
+    for a,b in returned_data:
+    	output_string = "    {item}. {name} - {count} views \n \n".format(item = n, name = a, count = b)
+    	items_string = items_string + output_string
+    	n+=1
+
+
+    return("The top authors are:\n \n {output_list}".format(output_list=items_string))
+
+  
 
 
 def find_top_error():
@@ -48,20 +55,25 @@ def find_top_error():
     cursor = database.cursor()
     cursor.execute(
         '''
-        SELECT to_char(date, 'FMMonth DD, YYYY'), "200 OK", "400 Not Found",
-        "400 Not Found"::decimal / "200 OK"::decimal as "Error Percent"
-        FROM crosstab_errors
-        WHERE "400 Not Found"::decimal / "200 OK"::decimal > 0.01
+        SELECT to_char(total_view.date, 'FMMonth FMDD, YYYY') as date,
+            round(100 * error_view.views / total_view.views::decimal, 2) as views
+        FROM error_view
+        JOIN total_view on error_view.date = total_view.date
+        WHERE error_view.views / total_view.views::decimal > 0.01
+        ORDER BY error_view.views / total_view.views::decimal desc;
         '''
         )
+  
     returned_data = cursor.fetchall()
-    date = returned_data[0][0]
-    error_rate = "{:.1%}".format(returned_data[0][3])
-    start_string = '''
-    \n The date with '404 Not Found' errors greater than 1% is \n \n
-        * {date} - {error}. \n \n
-    '''
-    return(start_string.format(date=date, error=error_rate))
+    
+    items_string = ""
+    n = 1
+    for a,b in returned_data:
+        output_string = "    {item}. {name} - {count}% \n \n".format(item = n, name = a, count = b)
+        items_string = items_string + output_string
+        n+=1
+    
+    return("The dates with 404 errors greater than 1 percent are:\n \n {output_list}".format(output_list=items_string))
 
 
 print (find_top_articles())
