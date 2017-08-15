@@ -3,10 +3,24 @@ SQL Project
 
 This is the SQL Logs Project for Udacity FSND.
 
+The purpose of this project is develop basic SQL skills by developing a variety of queries using SQL that ask the following three questions of website log database.
+
+1.What are the most popular three articles of all time?
+2.Who are the most popular article authors of all time?
+3.On which days did more than 1% of requests lead to errors?
+
 In order to run this file you will need the following:
 
-1. Postgresql
-2. The SQL logs data file included in the vagrant machine provided by the FSND degree
+1. Python 2 or 3
+2. A linux environment with Postgresql and psychopg2 for python
+3. The SQL logs data file included in the vagrant machine provided by the FSND degree
+
+
+To begin, CD to the location of the provided SQL file and run the following command. 
+
+1. psql -d news -f newsdata.sql.
+
+This will initialize the PSQL database with the logs data.
 
 In order to run the provided python file you will first need to build 4 psql views. When connected to the logs database,
 run the following commands.
@@ -62,3 +76,4 @@ The dates with 404 errors  greater than 1 percent  are:
 
      1. July 17, 2016 - 2.26%
 
+Thank you.
